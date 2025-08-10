@@ -1,13 +1,21 @@
-import Header from "./components/Header";
-import Navbar from "./components/Navbar";
-import HeroSection from "./components/HeroSection";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import LocationTracker from "./pages/LocationTracker";
+import VisitorTracker from "./pages/VisitorTracker";
+import VisitorGraphs from "./pages/VisitorGraphs";
+import VisitorMap from "./pages/VisitorMap";
+import VisitorsExport from "./pages/VisitorsExport";
 
 const App = () => (
   <>
-    <LocationTracker />
-    <Navbar />
-    <HeroSection />
+   <Router>
+      <Routes>
+  
+        <Route path="/" element={<VisitorTracker />} />
+        <Route path="/visitors/graphs" element={<VisitorGraphs />} />
+        <Route path="/visitorsmap" element={<VisitorMap />} />
+        <Route path="/visitors/export" element={<VisitorsExport />} />
+      </Routes>
+    </Router>
   </>
 );
 

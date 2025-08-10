@@ -1,0 +1,380 @@
+import React, { useEffect, useState, useMemo } from "react";
+import {
+  Globe,
+  Smartphone,
+  Monitor,
+  Tablet,
+  MapPin,
+  Link2,
+  Clock,
+  AlertCircle,
+  Search,
+  ChevronUp,
+  ChevronDown,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
+const VisitorTracker = () => {
+  const [visitors, setVisitors] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [countryFilter, setCountryFilter] = useState("");
+  const [cityFilter, setCityFilter] = useState("");
+  const [deviceFilter, setDeviceFilter] = useState("");
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  const [sortConfig, setSortConfig] = useState({
+    key: "timestamp",
+    direction: "desc",
+  });
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    setLoading(true);
+    fetch("https://api.loopandcut.in/api/customer/all/location_logs")
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch visitors");
+        return res.json();
+      })
+      .then((data) => {
+        const logs = Array.isArray(data) ? data : data.logs || data.data || [];
+        setVisitors(logs);
+        setError(null);
+      })
+      .catch((err) => {
+        setError(err.message);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const getDeviceIcon = (type) => {
+    switch (type) {
+      case "mobile":
+        return <Smartphone className="w-5 h-5 text-blue-500" />;
+      case "tablet":
+        return <Tablet className="w-5 h-5 text-purple-500" />;
+      default:
+        return <Monitor className="w-5 h-5 text-green-500" />;
+    }
+  };
+
+  const formatTime = (timestamp) => {
+    const date = new Date(timestamp);
+    return date.toLocaleString();
+  };
+
+  // Sorting
+  const sortedVisitors = useMemo(() => {
+    let sortable = [...visitors];
+    if (sortConfig.key) {
+      sortable.sort((a, b) => {
+        let aVal = a[sortConfig.key] || "";
+        let bVal = b[sortConfig.key] || "";
+
+        if (sortConfig.key === "timestamp") {
+          aVal = new Date(aVal).getTime();
+          bVal = new Date(bVal).getTime();
+        }
+
+        if (aVal < bVal) return sortConfig.direction === "asc" ? -1 : 1;
+        if (aVal > bVal) return sortConfig.direction === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+    return sortable;
+  }, [visitors, sortConfig]);
+
+  const countries = useMemo(
+    () => Array.from(new Set(visitors.map((v) => v.country).filter(Boolean))),
+    [visitors]
+  );
+  const citys = useMemo(
+    () => Array.from(new Set(visitors.map((v) => v.city).filter(Boolean))),
+    [visitors]
+  );
+  const devices = useMemo(
+    () =>
+      Array.from(new Set(visitors.map((v) => v.deviceType).filter(Boolean))),
+    [visitors]
+  );
+
+  // Filters
+  const filteredVisitors = sortedVisitors.filter((v) => {
+    const matchSearch =
+      v.ip?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      v.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      v.country?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      v.referrer?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchCountry = countryFilter ? v.country === countryFilter : true;
+    const matchCity = cityFilter ? v.city === cityFilter : true;
+    const matchDevice = deviceFilter ? v.deviceType === deviceFilter : true;
+
+    return matchSearch && matchCountry && matchDevice && matchCity;
+  });
+
+  // Pagination
+  const totalPages = Math.ceil(filteredVisitors.length / rowsPerPage);
+  const paginatedVisitors = filteredVisitors.slice(
+    (currentPage - 1) * rowsPerPage,
+    currentPage * rowsPerPage
+  );
+
+  const requestSort = (key) => {
+    let direction = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const renderSortIcon = (key) => {
+    if (sortConfig.key !== key) return null;
+    return sortConfig.direction === "asc" ? (
+      <ChevronUp className="inline w-4 h-4 ml-1" />
+    ) : (
+      <ChevronDown className="inline w-4 h-4 ml-1" />
+    );
+  };
+
+  // CSV Export Function
+  const exportToCSV = () => {
+    const headers = [
+      "IP Address",
+      "City",
+      "Country",
+      "Page",
+      "Referrer",
+      "Device Type",
+      "Language",
+      "Timestamp",
+    ];
+
+    const rows = paginatedVisitors.map((v) => [
+      v.ip || "",
+      v.city || "",
+      v.country || "",
+      v.page || "",
+      v.referrer || "",
+      v.deviceType || "",
+      v.language || "",
+      formatTime(v.timestamp) || "",
+    ]);
+
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      [headers, ...rows].map((row) => row.map((r) => `"${r}"`).join(",")).join("\n");
+
+    const link = document.createElement("a");
+    link.href = encodeURI(csvContent);
+    link.download = "visitors.csv";
+    link.click();
+  };
+
+  return (
+    <div className="p-6 bg-gray-50 min-h-screen">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-gray-800">📊 Visitor Analytics</h1>
+        <button
+          onClick={exportToCSV}
+          className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 transition"
+        >
+          Export CSV
+        </button>
+      </div>
+
+      {/* Search & Filters */}
+      <div className="flex flex-wrap gap-4 mb-4">
+        <div className="flex items-center border rounded px-2 bg-white shadow-sm">
+          <Search className="w-4 h-4 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search by IP, city, country, referrer..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="p-2 outline-none"
+          />
+        </div>
+
+        <select
+          value={countryFilter}
+          onChange={(e) => setCountryFilter(e.target.value)}
+          className="border p-2 rounded shadow-sm bg-white"
+        >
+          <option value="">All Countries</option>
+          {countries.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+
+        <select
+          value={cityFilter}
+          onChange={(e) => setCityFilter(e.target.value)}
+          className="border p-2 rounded shadow-sm bg-white"
+        >
+          <option value="">All Citys</option>
+          {citys.map((ct) => (
+            <option key={ct} value={ct}>
+              {ct}
+            </option>
+          ))}
+        </select>
+
+        <select
+          value={deviceFilter}
+          onChange={(e) => setDeviceFilter(e.target.value)}
+          className="border p-2 rounded shadow-sm bg-white"
+        >
+          <option value="">All Devices</option>
+          {devices.map((d) => (
+            <option key={d} value={d}>
+              {d}
+            </option>
+          ))}
+        </select>
+
+        <button
+          onClick={() => navigate("/visitors/graphs")}
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+        >
+          View Graphs
+        </button>
+        <button
+          onClick={() => navigate("/visitorsmap")}
+          className="bg-green-600 text-white px-3 py-2 rounded hover:bg-green-700"
+        >
+          Map View
+        </button>
+      </div>
+
+      {/* Loading & Error */}
+      {loading && <p>⏳ Loading visitor analytics...</p>}
+      {error && (
+        <p className="text-red-600 flex items-center gap-2">
+          <AlertCircle className="w-5 h-5" /> {error}
+        </p>
+      )}
+
+      {/* Table */}
+      {!loading && !error && (
+        <div className="overflow-x-auto bg-white rounded-lg shadow">
+          {filteredVisitors.length === 0 ? (
+            <p className="p-4 text-gray-500">No visitor data available.</p>
+          ) : (
+            <table className="min-w-full text-sm text-left">
+              <thead className="bg-gray-100 text-gray-700 uppercase text-xs sticky top-0">
+                <tr>
+                  <th
+                    className="px-4 py-3 cursor-pointer"
+                    onClick={() => requestSort("ip")}
+                  >
+                    IP Address {renderSortIcon("ip")}
+                  </th>
+                  <th className="px-4 py-3">Location</th>
+                  <th className="px-4 py-3">Page</th>
+                  <th className="px-4 py-3">Referrer</th>
+                  <th className="px-4 py-3">Device</th>
+                  <th className="px-4 py-3">Language</th>
+                  <th
+                    className="px-4 py-3 cursor-pointer"
+                    onClick={() => requestSort("timestamp")}
+                  >
+                    Time {renderSortIcon("timestamp")}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedVisitors.map((v) => (
+                  <tr
+                    key={v._id}
+                    className="border-b hover:bg-gray-50 transition"
+                  >
+                    <td className="px-4 py-3 font-mono">{v.ip}</td>
+                    <td className="px-4 py-3 flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-red-500" />
+                      {v.city}, {v.country}
+                    </td>
+                    <td className="px-4 py-3">
+                      <a
+                        href={v.page}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-blue-600 hover:underline flex items-center gap-1"
+                      >
+                        <Link2 className="w-4 h-4" />
+                        {v.page?.length > 30
+                          ? v.page.slice(0, 30) + "..."
+                          : v.page}
+                      </a>
+                    </td>
+                    <td className="px-4 py-3">{v.referrer}</td>
+                    <td className="px-4 py-3 flex items-center gap-2">
+                      {getDeviceIcon(v.deviceType)} {v.deviceType}
+                    </td>
+                    <td className="px-4 py-3">{v.language}</td>
+                    <td className="px-4 py-3 flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-gray-500" />
+                      {formatTime(v.timestamp)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      )}
+
+      {/* Pagination */}
+      {!loading && !error && filteredVisitors.length > 0 && (
+        <div className="flex justify-between items-center mt-4">
+          <div>
+            Rows per page:{" "}
+            <select
+              value={rowsPerPage}
+              onChange={(e) => {
+                setRowsPerPage(Number(e.target.value));
+                setCurrentPage(1);
+              }}
+              className="border p-1 rounded bg-white"
+            >
+              {[5, 10, 20, 50].map((num) => (
+                <option key={num} value={num}>
+                  {num}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-1 border rounded bg-white disabled:opacity-50"
+            >
+              Prev
+            </button>
+            <span>
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1 border rounded bg-white disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default VisitorTracker;
