@@ -67,10 +67,10 @@ export default function VisitorMap() {
     return () => window.removeEventListener("resize", calc);
   }, []);
 
-  const projection = geoMercator().fitSize(
-    [size.width, size.height],
-    { type: "FeatureCollection", features: countries }
-  );
+  const projection = geoMercator().fitSize([size.width, size.height], {
+    type: "FeatureCollection",
+    features: countries,
+  });
   const path = geoPath().projection(projection);
 
   // jitter for identical coords
@@ -142,9 +142,13 @@ export default function VisitorMap() {
     );
   };
 
-  // New: calculate totals
-  const totalVisits = visitors.length;
-  const uniqueVisitors = new Set(visitors.map((v) => v.ip)).size;
+  // New: calculate totals with IP filtering
+  const filteredVisitors = visitors.filter((v) => v.ip && v.ip.trim() !== "");
+
+  const totalVisits = filteredVisitors.length;
+  const uniqueVisitors = new Set(filteredVisitors.map((v) => v.ip)).size;
+  const repeatRate =
+    totalVisits > 0 ? ((1 - uniqueVisitors / totalVisits) * 100).toFixed(1) : 0;
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -167,7 +171,7 @@ export default function VisitorMap() {
       </div>
 
       {/* Counts */}
-      <div className="mb-4 flex gap-6 text-sm text-gray-700">
+      <div className="mb-4 flex gap-6 text-sm text-gray-700 bg-white p-3 rounded shadow">
         <div>
           <span className="font-semibold">Total Visits:</span> {totalVisits}
         </div>
@@ -175,6 +179,7 @@ export default function VisitorMap() {
           <span className="font-semibold">Unique Visitors:</span>{" "}
           {uniqueVisitors}
         </div>
+        <div className="text-gray-500">Repeat Rate: {repeatRate}%</div>
       </div>
 
       {loading ? (

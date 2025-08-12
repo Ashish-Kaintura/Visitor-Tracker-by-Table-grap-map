@@ -64,6 +64,12 @@ export default function VisitorGraphs() {
   // Other KPIs
   const countries = groupCount(filteredVisitors, "country");
   const devices = groupCount(filteredVisitors, "deviceType");
+
+  // Visitors by City
+  const cities = groupCount(filteredVisitors, "city")
+    .sort((a, b) => b.count - a.count) // Sort by highest visits
+    .slice(0, 10); // Top 10 cities
+
   const uniqueCountries = countries.length;
   const uniqueDevices = devices.length;
   const topCity =
@@ -188,6 +194,18 @@ export default function VisitorGraphs() {
                 <YAxis />
                 <Tooltip />
                 <Bar dataKey="count" fill="#0088FE" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          {/* Visitors by City */}
+          <div className="bg-white p-4 rounded shadow">
+            <h2 className="font-semibold mb-4">Visitors by City (Top 10)</h2>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={cities}>
+                <XAxis dataKey="city" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="count" fill="#00C49F" />
               </BarChart>
             </ResponsiveContainer>
           </div>
