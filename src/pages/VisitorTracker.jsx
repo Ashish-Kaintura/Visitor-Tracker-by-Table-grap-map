@@ -220,7 +220,7 @@ const VisitorTracker = () => {
       </div>
 
       <div className="flex flex-wrap gap-4 mb-4">
-        {/* Date Range Inputs */}
+
         {["start", "end"].map((type) => (
           <div key={type}>
             <label className="block text-sm">
@@ -251,7 +251,7 @@ const VisitorTracker = () => {
         </button>
       </div>
 
-      {/* Search & Filters */}
+    
       <div className="flex flex-wrap gap-4 mb-4">
         <div className="flex items-center border rounded px-2 bg-white shadow-sm">
           <Search className="w-4 h-4 text-gray-400" />
@@ -311,7 +311,7 @@ const VisitorTracker = () => {
         </button>
       </div>
 
-      {/* Loading & Error */}
+    
       <div className=" flex justify-center items-center  ">
         {loading && <p>⏳ Loading visitor analytics...</p>}
       </div>
@@ -321,7 +321,7 @@ const VisitorTracker = () => {
         </p>
       )}
 
-      {/* Table */}
+  
       {!loading && !error && (
         <div className="overflow-x-auto bg-white rounded-lg shadow h-[60vh] scroll-m-2">
           {filteredVisitors.length === 0 ? (

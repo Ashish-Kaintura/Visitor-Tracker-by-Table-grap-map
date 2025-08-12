@@ -91,7 +91,6 @@ export default function VisitorGraphs() {
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
-      {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">📈 Visitor Analytics</h1>
         <button
@@ -102,7 +101,6 @@ export default function VisitorGraphs() {
         </button>
       </div>
 
-      {/* Date Range Picker */}
       <div className="flex gap-4 mb-6">
         {["start", "end"].map((type) => (
           <div key={type}>
@@ -119,7 +117,7 @@ export default function VisitorGraphs() {
             />
           </div>
         ))}
-        {/* Reset Button */}
+
         <button
           onClick={() => setDateRange({ start: "", end: "" })}
           className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
@@ -176,7 +174,7 @@ export default function VisitorGraphs() {
         ))}
       </div>
 
-      {/* Charts */}
+ 
       {loading ? (
         <p>Loading charts...</p>
       ) : error ? (
@@ -185,7 +183,7 @@ export default function VisitorGraphs() {
         <p>No data available for the selected range.</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Visitors by Country */}
+       
           <div className="bg-white p-4 rounded shadow">
             <h2 className="font-semibold mb-4">Visitors by Country</h2>
             <ResponsiveContainer width="100%" height={300}>
@@ -197,7 +195,7 @@ export default function VisitorGraphs() {
               </BarChart>
             </ResponsiveContainer>
           </div>
-          {/* Visitors by City */}
+
           <div className="bg-white p-4 rounded shadow">
             <h2 className="font-semibold mb-4">Visitors by City (Top 10)</h2>
             <ResponsiveContainer width="100%" height={300}>
@@ -210,7 +208,6 @@ export default function VisitorGraphs() {
             </ResponsiveContainer>
           </div>
 
-          {/* Visitors by Device */}
           <div className="bg-white p-4 rounded shadow">
             <h2 className="font-semibold mb-4">Visitors by Device</h2>
             <ResponsiveContainer width="100%" height={300}>
@@ -233,7 +230,6 @@ export default function VisitorGraphs() {
             </ResponsiveContainer>
           </div>
 
-          {/* Visits Over Time */}
           <div className="bg-white p-4 rounded shadow md:col-span-2">
             <h2 className="font-semibold mb-4">Visits Over Time</h2>
             <ResponsiveContainer width="100%" height={300}>
