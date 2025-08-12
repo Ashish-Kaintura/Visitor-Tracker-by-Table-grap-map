@@ -235,7 +235,7 @@ export default function VisitorMap() {
                 className="absolute z-50 pointer-events-none"
                 style={{
                   left: tooltip.x + 12,
-                  top: tooltip.y - 12,
+                  top: tooltip.y - 60,
                   transform: "translate(-50%, -100%)",
                 }}
               >
