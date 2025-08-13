@@ -220,7 +220,6 @@ const VisitorTracker = () => {
       </div>
 
       <div className="flex flex-wrap gap-4 mb-4">
-
         {["start", "end"].map((type) => (
           <div key={type}>
             <label className="block text-sm">
@@ -238,6 +237,12 @@ const VisitorTracker = () => {
         ))}
 
         <button
+          onClick={() => navigate("/visitorsnumber")}
+          className="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700 transition"
+        >
+          Mobile Number leads
+        </button>
+        <button
           onClick={() => navigate("/visitors/graphs")}
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
         >
@@ -251,7 +256,6 @@ const VisitorTracker = () => {
         </button>
       </div>
 
-    
       <div className="flex flex-wrap gap-4 mb-4">
         <div className="flex items-center border rounded px-2 bg-white shadow-sm">
           <Search className="w-4 h-4 text-gray-400" />
@@ -311,7 +315,6 @@ const VisitorTracker = () => {
         </button>
       </div>
 
-    
       <div className=" flex justify-center items-center  ">
         {loading && <p>⏳ Loading visitor analytics...</p>}
       </div>
@@ -321,7 +324,6 @@ const VisitorTracker = () => {
         </p>
       )}
 
-  
       {!loading && !error && (
         <div className="overflow-x-auto bg-white rounded-lg shadow h-[60vh] scroll-m-2">
           {filteredVisitors.length === 0 ? (
